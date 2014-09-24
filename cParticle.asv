@@ -1,0 +1,43 @@
+classdef cParticle
+    
+    properties
+        Euler       
+        d_Euler      
+        score    
+        scoreBest
+        EulerBest
+    end
+    
+    methods
+        function obj = cParticle(EulerInit,d_EulerInit)
+            obj.Euler   = EulerInit;
+            obj.d_Euler = d_EulerInit;
+        end
+        
+        function  obj = Move(obj,Msrc,Psrc)
+            for i = 1:4
+                obj.Euler = obj.Euler(i,:) + obj.d_Euler(i,:);              
+                alpha = obj.Euler(i,1);
+                beta  = obj.Euler(i,2);
+                gamma = obj.Euler(i,3);
+              
+                R = [ cos(alpha)*cos(gamma)-cos(beta)*sin(alpha)*sin(gamma)  -cos(beta)*cos(gamma)*sin(alpha)-cos(alpha)*sin(gamma)  sin(alpha)*sin(beta);
+                      cos(gamma)*sin(alpha)+cos(alpha)*cos(beta)*sin(gamma)   cos(alpha)*cos(beta)*cos(gamma)-sin(alpha)*sin(gamma) -cos(alpha)*sin(beta);
+                      sin(beta)*sin(gamma)                        cos(gamma)*sin(beta)                       cos(beta)      ];     
+                RT = [R,[0 0 0]';0 0 0 1]; 
+                obj.M{i} = R*obj.M{i}*RT;
+            end
+            obj.score = judgeParticle(Msrc,Psrc);
+            if obj.score < obj.scoreBest
+                obj.scoreBest = obj.score;
+                obj.VSbest = obj.Vsum;
+            end
+           
+        end
+        
+        function  obj = updataV(obj,gloBestVS,a1,a2)
+            obj.V = obj.V + a1*random('Uniform',0,1)*(obj.Vsum - obj.VSbest) + a2*random('Uniform',0,1)*(obj.Vsum - gloBestVS);
+        end
+    end
+end
+
